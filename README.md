@@ -7,11 +7,10 @@ Autorzy rozwiązań:
 * Zaimplementować grę dwuosobową, turowa o sumowie zerowej (w naszym przypadku gra Nim)
 * Zaimplementować sztuczną inteligencję, który będzie grać w zaproponowaną grę
 * Na początku kodu dodać link do zasad; autorzy; instrukcja przygotowania środowiska
-* Dodać dokumentację do kodu źródłowego (np. Python -> docstring; Java -> Jdoc; Kotlina -> Kdoc)
+* Dodać dokumentację do kodu źródłowego (<a href="https://go.dev/blog/godoc">godoc</a>)
 * Dodaj zrzu ekranu z przykładowej rozgrywki
 * Upewnij się, że nikt z grupy nie wybrał tej samej gry i technologii do rozwiązania
 * Prześlij link / dodaj prowadzącego do repozytorium pczapiewski@pjwstk.edu.pl
-
 
 ### Przygotowanie środowiska dla systemu Linux
 
@@ -26,14 +25,6 @@ Autorzy rozwiązań:
    - Po zainstalowaniu sprawdź wersję Go:
      ```bash
      go version
-     ```
-
-2. **Ustawienie zmiennej środowiskowej GOPATH**:
-   - Ustaw zmienną `GOPATH` i dodaj Go do `PATH`:
-     ```bash
-     echo "export GOPATH=$HOME/go" >> ~/.bashrc
-     echo "export PATH=$PATH:$GOPATH/bin" >> ~/.bashrc
-     source ~/.bashrc
      ```
 
 #### Krok po kroku
@@ -63,11 +54,6 @@ Autorzy rozwiązań:
    - Pobierz instalator Go dla Windows z [oficjalnej strony Go](https://golang.org/dl/).
    - Uruchom instalator i postępuj zgodnie z instrukcjami.
 
-2. **Ustawienie zmiennej środowiskowej GOPATH**:
-   - Otwórz Panel sterowania > System > Zaawansowane ustawienia systemu > Zmienne środowiskowe.
-   - Dodaj nową zmienną o nazwie `GOPATH` i ustaw wartość na `C:\Users\<TwojaNazwaUżytkownika>\go`.
-   - Dodaj `C:\Go\bin` oraz `C:\Users\<TwojaNazwaUżytkownika>\go\bin` do zmiennej `PATH`.
-
 #### Krok po kroku
 
 1. **Utwórz katalog projektu**:
@@ -88,10 +74,3 @@ Autorzy rozwiązań:
    ```cmd
    go run main.go
    ```
-
-### Dodatkowe informacje
-
-- Jeśli będziesz potrzebować zainstalować dodatkowe biblioteki, użyj polecenia:
-  ```bash
-  go get <nazwa_biblioteki>
-  ```
