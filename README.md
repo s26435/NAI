@@ -43,6 +43,8 @@ Autorzy rozwiązań:
 
 3. **Uruchomienie projektu**:
    ```bash
+   go mod init mod
+   go mod tidy
    go run main.go
    ```
 
@@ -72,5 +74,7 @@ Autorzy rozwiązań:
 
 3. **Uruchomienie projektu**:
    ```cmd
+   go mod init mod
+   go mod tidy
    go run main.go
    ```
