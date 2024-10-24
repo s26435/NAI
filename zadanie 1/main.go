@@ -1,3 +1,11 @@
+// Authors:
+// Jan Wolski s26435
+// Marcin Topolniak s25672
+
+// Rules of game: https://pl.wikipedia.org/wiki/Nim
+
+//Instrukcja przygotowania środowiska znajduje się w README.md w repozytorium
+
 package main
  
 import (
