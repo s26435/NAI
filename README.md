@@ -12,6 +12,17 @@ Autorzy rozwiązań:
 * Upewnij się, że nikt z grupy nie wybrał tej samej gry i technologii do rozwiązania
 * Prześlij link / dodaj prowadzącego do repozytorium pczapiewski@pjwstk.edu.pl
 
+## Zadanie 2
+* Zaimplementuj system z użyciem logiki rozmytej
+* Dodaj dokumentację do kodu źródłowego
+* Na początku kodu dodaj opis problemu; wymień autorów rozwiązania; dodaj instrukcję przygotowania środowisk
+* Opracowany system musi posiadać przynajmniej 3 wejścia i minimum 1 wyjście
+* Wyjście musi być opisane za pomocą przynajmnniej 3 membershio function. Zasada nie obowiązuje, jeżeli system ma więcej wyjść niż 1
+* Rozwiązanie umieść w repozytorium z poprzednich ćwiczeń
+* Do rozwiązania proszę dołączyć zrzut ekranu/log z przykładowymi 2 wywołaniami systemu
+* BONUS: zademonstruj użycie swojego algorytmu do rozwiązania w czasie rzeczywistym
+* Problem i technologia muszą być unikatowe w obszarze grupy 
+
 ### Przygotowanie środowiska dla systemu Linux
 
 #### Wymagania wstępne
