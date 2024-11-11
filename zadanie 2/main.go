@@ -56,9 +56,9 @@ func CalculateAttendanceScore(hours, importance, distance float64) float64 {
 }
 
 func main() {
-	hours := 6.0
-	importance := 5.0
-	distance := 15.0
+	hours := 8.0
+	importance := 2.0
+	distance := 20.0
 
 	score := CalculateAttendanceScore(hours, importance, distance)
 	fmt.Printf("Attendance worthiness score: %.2f out of 5\n", score)
