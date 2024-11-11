@@ -1,3 +1,16 @@
+// Autorzy:
+// Jan Wolski s26435
+// Marcin Topolniak s25672
+
+// Opis problemu:
+// Określenie sensu pójścia na zajęcia za pomocą trzech zmiennych: 
+// - ilości godzin w danym dniu zajęć
+// - subiektywna ważność zajęć danego dnia
+// - dystans do odbycia
+
+// Opis przygotowania środowiska znajduje się w pliku readme.me w repozytorium
+
+
 package main
 
 import (
@@ -5,6 +18,8 @@ import (
 	"math"
 )
 
+// Funkcja odpowiedzialna za rozmycie wartości godzin i przypisanie wartości z przedziału [0, 1]
+// fukncja sprawdza również czy podana wartość jest w prawidłowym zakresie
 func FuzzifyHours(hours float64) (float64, error) {
 	if hours <= 1 {
 		return 1.0, fmt.Errorf("too high value of hours, should be (0 - 12)")
@@ -14,6 +29,8 @@ func FuzzifyHours(hours float64) (float64, error) {
 	return 1 - (hours-1)/11.0, nil
 }
 
+// Funkcja odpowiedzialna za rozmycie wartości "ważności" i przypisanie wartości z przedziału [0, 1]
+// Sprawdzane jest też czy podana wartośc jest z określonego przedziału (0 -5)
 func FuzzifyImportance(importance float64) (float64, error) {
 	if importance <= 0 {
 		return 0.0, fmt.Errorf("too high value of importacne, should be (0 - 5)")
@@ -23,6 +40,7 @@ func FuzzifyImportance(importance float64) (float64, error) {
 	return importance / 5.0, nil
 }
 
+// Funkcja działa na podobnej zasadzie co dwie poprzednie, tylko dotyczy dystansu
 func FuzzifyDistance(distance float64) (float64, error) {
 	if distance <= 0 {
 		return 1.0, fmt.Errorf("too high value of importacne, should be (0 - 5)")
@@ -31,7 +49,10 @@ func FuzzifyDistance(distance float64) (float64, error) {
 	}
 	return 1 - distance/100.0, nil
 }
-
+// Funkcja oblicza ostateczny wynik
+// Przyjmuje wszytskie trzy zmienne i rodziela po poprzednich fukncjach by otrzymać wartości rozmyte
+// Następnie wyznacza trzy różne kombinacje dla tych wartości i odpowiednio je skaluje
+// Wynikiem ostatecznym jest średnia z tych trzech kombinacji
 func CalculateAttendanceScore(hours, importance, distance float64) float64 {
 	fHours, err := FuzzifyHours(hours)
 	if err != nil {
