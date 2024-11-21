@@ -176,10 +176,7 @@ func (mr *MovieRatings) RecommendMovies(personID int, k int) ([]string, []string
 			}
 			clusters[closest] = append(clusters[closest], user)
 		}
-
-		for j := 0; j < k; j++ {
-			centroids[j] = calculateNewCentroid(clusters[j], userRatings)
-		}
+		centroids = calculateNewCentroids(clusters, userRatings)
 	}
 
 	userCluster := -1
@@ -249,12 +246,33 @@ func calculateDistance(user1, user2 map[string]float64) float64 {
 	return math.Sqrt(sum)
 }
 
-// calculateNewCentroid oblicza nowy centroid jako średnią ocen użytkowników w klastrze
-func calculateNewCentroid(cluster []int, userRatings map[int]map[string]float64) int {
-	if len(cluster) == 0 {
-		return -1
+// calculateNewCentroid oblicza nowy centroid jako średnią ocen użytkowników w klastrze użycie algorytmu "Mean od Nearest Points"
+func calculateNewCentroids(clusters map[int][]int, userRatings map[int]map[string]float64) []int {
+	centroids := make([]int, len(clusters))
+	for clusterIdx, users := range clusters {
+		if len(users) == 0 {
+			continue
+		}
+
+		minDistanceSum := math.MaxFloat64
+		newCentroid := users[0]
+
+		for _, candidate := range users {
+			distanceSum := 0.0
+			for _, user := range users {
+				distanceSum += calculateDistance(userRatings[candidate], userRatings[user])
+			}
+
+			if distanceSum < minDistanceSum {
+				minDistanceSum = distanceSum
+				newCentroid = candidate
+			}
+		}
+
+		centroids[clusterIdx] = newCentroid
 	}
-	return cluster[0]
+
+	return centroids
 }
 
 // getMovieDetails tworzy zapytania dotyczące filmów na podstawie imdbID
