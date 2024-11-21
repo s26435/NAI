@@ -21,7 +21,15 @@ Autorzy rozwiązań:
 * Rozwiązanie umieść w repozytorium z poprzednich ćwiczeń
 * Do rozwiązania proszę dołączyć zrzut ekranu/log z przykładowymi 2 wywołaniami systemu
 * BONUS: zademonstruj użycie swojego algorytmu do rozwiązania w czasie rzeczywistym
-* Problem i technologia muszą być unikatowe w obszarze grupy 
+* Problem i technologia muszą być unikatowe w obszarze grupy
+
+## Zadanie 3
+* Polecenie: Zaimplementuj silnik rekomandacji filmów/seriali.
+* Przestudiuj materiał	A Comparative Study of Clustering Algorithms | by ishika chatterjee | Analytics Vidhya | Medium
+* Rozważ uzupełnienie ankiety (samodzielnie)
+* Zbuduj silnik rekomendacji filmów i/lub seriali.
+* Zaproponuj 5 filmów interesujących dla wybranego użytkownika, których nie oglądał.
+* Zaproponouj 5 film, których dany użytkownik nie powinnien oglądać (antyrekomendacje).
 
 ### Przygotowanie środowiska dla systemu Linux
 
