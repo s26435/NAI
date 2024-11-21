@@ -360,7 +360,6 @@ func main() {
 	for _, movie := range recommendations {
 		fmt.Println(movie)
 		imdbID, err := movieRatings.GetIMDBIDByTitle(movie)
-		//fmt.Println(imdbID)
 		if err != nil {
 			fmt.Println("Error fetching movie details:", err)
 		}
