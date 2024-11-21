@@ -40,7 +40,8 @@ type MovieRatings struct {
 	Ratings []MovieRating
 }
 
-// funkcja która z podanym tytułem zwraca IMDBID
+// GetIMDBIDByTitle szuka w tablicy ocen filmu o podanym tytule i zwraca jego ID z bazy IMDB.
+// Jeśli film nie zostanie znaleziony, funkcja zwraca odpowiedni komunikat o błędzie.
 func (movieRatings *MovieRatings) GetIMDBIDByTitle(title string) (string, error) {
 	for _, movie := range movieRatings.Ratings {
 		if movie.MovieTitle == title {
@@ -50,7 +51,9 @@ func (movieRatings *MovieRatings) GetIMDBIDByTitle(title string) (string, error)
 	return "", fmt.Errorf("no sutch a film")
 }
 
-// LoadCSV to metoda która ładuje oceny filmów z pliku CSV do struktury MovieRatings
+// LoadCSV wczytuje dane o ocenach filmów z pliku CSV i zapisuje je w strukturze MovieRatings.
+// Każdy wiersz pliku powinien zawierać dane w formacie: ID użytkownika, tytuł filmu i ocena.
+// Funkcja ignoruje nagłówki i błędne wiersze, a błędy podczas parsowania są logowane.
 func (mr *MovieRatings) LoadCSV(filename string) error {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -102,7 +105,9 @@ func (mr *MovieRatings) LoadCSV(filename string) error {
 	return nil
 }
 
-// LoadIMDBIDs to metoda ładująca IMDBID z pliku csv do struktury MovieRatings
+// LoadIMDBIDs wczytuje powiązania tytułów filmów z ich ID z bazy IMDB z pliku CSV.
+// Dla każdego filmu w strukturze MovieRatings, przypisuje odpowiednie ID z pliku.
+// Wiersze z błędnymi danymi są ignorowane, a funkcja loguje ewentualne problemy.
 func (mr *MovieRatings) LoadIMDBIDs(filename string) error {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -137,8 +142,12 @@ func (mr *MovieRatings) LoadIMDBIDs(filename string) error {
 	return nil
 }
 
-// metoda RecommendMovies struktury MovieRatings zwraca dwie tablice stringów zawierajace 5 tytułów filmów wybranych przez algorytm dla urzytkownika o podanym id (dla pana id = 1)
-// tworzy mapę filmów i wyłącza te oglądane przez użytkownika
+// RecommendMovies generuje rekomendacje filmowe dla użytkownika o podanym ID.
+// Funkcja używa algorytmu k-średnich (k-means) do podziału użytkowników na grupy na
+// podstawie ich ocen filmów. Następnie wybiera filmy najlepiej oceniane przez osoby
+// w tej samej grupie (których użytkownik jeszcze nie oglądał). Zwraca dwie listy:
+// - Najlepsze 5 filmów, które użytkownik prawdopodobnie polubi.
+// - Najgorsze 5 filmów, które użytkownik powinien unikać.
 func (mr *MovieRatings) RecommendMovies(personID int, k int) ([]string, []string) {
 	userRatings := make(map[int]map[string]float64)
 	for _, rating := range mr.Ratings {
@@ -228,6 +237,10 @@ func (mr *MovieRatings) RecommendMovies(personID int, k int) ([]string, []string
 }
 
 // calculateDistance oblicza odległość Euklidesową między dwoma użytkownikami
+// na podstawie ich ocen filmów. Funkcja działa zarówno dla wspólnych ocen
+// (tych samych filmów), jak i dla filmów ocenionych tylko przez jedną osobę.
+// Wynik to liczba reprezentująca poziom podobieństwa: im mniejsza wartość,
+// tym bardziej podobne są preferencje użytkowników.
 func calculateDistance(user1, user2 map[string]float64) float64 {
 	sum := 0.0
 	for movie, rating1 := range user1 {
@@ -246,7 +259,10 @@ func calculateDistance(user1, user2 map[string]float64) float64 {
 	return math.Sqrt(sum)
 }
 
-// calculateNewCentroid oblicza nowy centroid jako średnią ocen użytkowników w klastrze użycie algorytmu "Mean od Nearest Points"
+// calculateNewCentroids oblicza nowe centroidy dla klastrów w algorytmie k-means.
+// Każdy centroid jest reprezentowany przez użytkownika, którego oceny są najbardziej
+// "centralne" (średnie) w porównaniu do innych użytkowników w danym klastrze.
+// Proces minimalizuje sumę odległości między ocenami użytkowników w klastrze.
 func calculateNewCentroids(clusters map[int][]int, userRatings map[int]map[string]float64) []int {
 	centroids := make([]int, len(clusters))
 	for clusterIdx, users := range clusters {
@@ -275,30 +291,28 @@ func calculateNewCentroids(clusters map[int][]int, userRatings map[int]map[strin
 	return centroids
 }
 
-// getMovieDetails tworzy zapytania dotyczące filmów na podstawie imdbID
+// getMovieDetails pobiera szczegółowe informacje o filmie na podstawie jego ID z bazy IMDB.
+// Funkcja wysyła zapytanie do API OMDB, a następnie analizuje odpowiedź w formacie JSON.
+// Zwracane dane obejmują m.in. tytuł, rok produkcji, gatunek, reżysera i ocenę na IMDB.
+// Jeśli film nie zostanie znaleziony lub API zwróci błąd, funkcja zgłasza odpowiedni komunikat.
 func getMovieDetails(imdbID string) (string, error) {
 	imdbID = strings.TrimPrefix(imdbID, "tt")
 	imdbID = strings.TrimSpace(imdbID)
 	url := fmt.Sprintf("http://www.omdbapi.com/?apikey=%s&i=%s", APIKEY, imdbID)
-	//fmt.Println(url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", fmt.Errorf("could not fetch movie details: %v", err)
 	}
 	defer resp.Body.Close()
 
-	// Check for non-200 status code
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("received non-OK response code: %d", resp.StatusCode)
 	}
 
-	// Print the raw response for debugging
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("could not read response body: %v", err)
 	}
-
-	//fmt.Println("API Response:", string(bodyBytes))
 
 	var result map[string]interface{}
 	if err := json.Unmarshal(bodyBytes, &result); err != nil {
@@ -318,7 +332,8 @@ func getMovieDetails(imdbID string) (string, error) {
 	return details, nil
 }
 
-// getString zwraca dane z jsona, N/A jeśli są niepoprawne albo ich nie ma
+// getString wyciąga wartość z mapy JSON na podstawie podanego klucza.
+// Jeśli wartość nie istnieje lub klucz jest niepoprawny, funkcja zwraca "N/A".
 func getString(data map[string]interface{}, key string) string {
 	if val, ok := data[key]; ok {
 		return fmt.Sprintf("%v", val)
