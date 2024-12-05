@@ -5,7 +5,12 @@ import (
 	"math"
 	"zad4/utils"
 )
-
+/*
+Funkcja ShowSVM to główna funkcja wywołująca klasyfikacje SVM:
+- pobiera dane z getDataset
+- uczy model SVM na danych treningowych
+- analizuje wyniki klasyfikacji na danych testowych
+*/
 func ShowSVM(dataSetNum int){
 	X, y, X_test, y_test, err := getDataset(dataSetNum)
 	utils.Must(err)
@@ -14,12 +19,9 @@ func ShowSVM(dataSetNum int){
 	mcSVM := NewMultiClassSVM(0.001, 0.01, 1000, uniqueClasses)
 	mcSVM.Fit(X, y)
 
-	// acc := mcSVM.Evaluate(X_test, y_test)
-
-	// fmt.Printf("Validation accuracy: %f\n", acc)
 	mcSVM.Analyze(X_test, y_test)
 }
-
+// Struktura dla klasyfikatora SVM
 type SVM struct {
 	LearningRate float64
 	LambdaParam  float64
@@ -27,7 +29,7 @@ type SVM struct {
 	W            []float64
 	B            float64
 }
-
+// Funkcja tworzy nowy obiekt klasyfikatora SVM
 func NewSVM(learningRate, lambdaParam float64, nIters int) *SVM {
 	return &SVM{
 		LearningRate: learningRate,
@@ -37,7 +39,14 @@ func NewSVM(learningRate, lambdaParam float64, nIters int) *SVM {
 		B:            0,
 	}
 }
-
+/* 
+Funkcja fit trenuke model SVM
+- inicjalizuje wektory wag 'W' i przesunięcie 'B'
+- iteracyjnie optymalizuje 'W' i 'B' na podstawie warunku marginu (Hinge Loss):
+  * jeśli punkt jest poprawnie sklasyfikowany, zmniejsza regularizację
+  * w przeciwnym wypadku aktualizuj wagi i przesunięcie
+- powtarza proces przez zadaną liczbę iteracji ('NIters')
+*/
 func (svm *SVM) fit(X [][]float64, y []int) {
 	nSamples := len(X)
 	nFeatures := len(X[0])
@@ -73,7 +82,7 @@ func (svm *SVM) fit(X [][]float64, y []int) {
 		}
 	}
 }
-
+// Funkcja predict przewiduje wyniki dla zbioru danych
 func (svm *SVM) predict(X [][]float64) []float64 {
 	nSamples := len(X)
 	predictions := make([]float64, nSamples)
@@ -90,12 +99,14 @@ func (svm *SVM) predict(X [][]float64) []float64 {
 
 	return predictions
 }
-
+// Struktura dla wieloklasowego SVM
 type MultiClassSVM struct {
 	SVMs       []*SVM
 	UniqueClasses []int
 }
-
+/*
+Funkcja NewMultiClass tworzy nowy model wieloklasowego SVM
+*/
 func NewMultiClassSVM(learningRate, lambdaParam float64, nIters int, uniqueClasses []int) *MultiClassSVM {
 	svms := make([]*SVM, len(uniqueClasses))
 	for i := range uniqueClasses {
@@ -106,7 +117,11 @@ func NewMultiClassSVM(learningRate, lambdaParam float64, nIters int, uniqueClass
 		UniqueClasses: uniqueClasses,
 	}
 }
-
+/*
+Klasa Fit uczy model wieloklasowego SVM
+- dla każdej klasy tworzy model binarny
+- uczy każdy model na odpowiednich
+*/
 func (mc *MultiClassSVM) Fit(X [][]float64, y []int) {
 	for i, class := range mc.UniqueClasses {
 		yBinary := make([]int, len(y))
@@ -121,7 +136,13 @@ func (mc *MultiClassSVM) Fit(X [][]float64, y []int) {
 		mc.SVMs[i].fit(X, yBinary)
 	}
 }
-
+/*
+Funkcja Predict przewiduje etykiety klas dla danych wejściowych
+- iteruje przez wszystkie próbki w danych wejściowych
+- dla każdej próbki oblicza wynik dla każdego modelu SVM
+- porównuje wyniki i wybiera klasę z najwyższym wynikiem
+- zwraca listę przewidywanych etykiet klas
+*/
 func (mc *MultiClassSVM) Predict(X [][]float64) []int {
 	nSamples := len(X)
 	predictions := make([]int, nSamples)
@@ -148,7 +169,13 @@ func (mc *MultiClassSVM) Predict(X [][]float64) []int {
 
 	return predictions
 }
-
+/*
+Funkcja Evaluate oblicza dokładność modelu na danych testowych
+- wywołuje fukncję Predict
+- porównuje przewidywane etykiety z rzeczywistymi etykietami
+- liczy liczbę poprawnych przewidywań
+- oblicza i zwraca dokładność jako procent poprawnych przewidywań
+*/
 func (mc *MultiClassSVM) Evaluate(X [][]float64, y []int) float64{
 	predictions := mc.Predict(X)
 	nSamples := len(y)
@@ -162,7 +189,11 @@ func (mc *MultiClassSVM) Evaluate(X [][]float64, y []int) float64{
 
 	return float64(correct) / float64(nSamples) * 100
 }
-
+/*
+Funkcja Analyze oblicza metryki jakości klasyfikacji dla każdego modelu
+- oblicza metryki takie jak dokładność, precyzja, czułość itp
+- wyświetla wyniki w konsoli
+*/
 func (mc *MultiClassSVM) Analyze(X [][]float64, y []int) {
     predictions := mc.Predict(X)
     uniqueLabels := unique(y)
