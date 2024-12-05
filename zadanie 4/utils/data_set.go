@@ -16,7 +16,13 @@ import (
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 )
-
+/*
+Plik data_set implementuje różne typt zestawów danych oraz operacje na nich
+Obsługiwane zestawy:
+1. Dataset - dane dotyczące jakości wina
+2. DatasetPassenger - dane pasażeró z Titanica
+3. DatasetInsulin - dane o insulinach pobierane z API
+*/
 type Dataset []WineData
 
 type WineData struct {
@@ -35,7 +41,11 @@ type WineData struct {
 }
 
 
-
+/*
+Funkcja print wyświetla zawrtość zestawu danych
+- iteruje przez dane i wyświetla szczegóły każdej próbki
+- zatrzymuje wyświetlanie po osiągnięciu limitu
+*/
 func (ds Dataset) Print(optionalArgs ...int) {
 	var tr int = -1
 	if len(optionalArgs) == 1 {
@@ -49,6 +59,12 @@ func (ds Dataset) Print(optionalArgs ...int) {
 	}
 }
 
+/*
+Funkcja Visualize wizualizuje rozkład jakości wina w zestawie danych
+- oblicza liczność próbek dla każdej jakości
+- tworzy histogram z rozkładem jakości
+- zapisuje wykres do pliku
+*/
 func (ds Dataset) Visualize() {
 	// Zliczanie jakości wina
 	qualityCounts := make(map[int]int)
@@ -92,7 +108,12 @@ func (ds Dataset) Visualize() {
 
 	fmt.Println("Wykres zapisany do wine_quality_distribution.png")
 }
-
+/* 
+Funkcja LoadData pobiera dane o jakości wina z pliku CSV
+- pobiera plik CSV z podanego URL
+- przetwarza dane CSV, konwertują je na struktury 'WineData'
+- obsługuje potencjalne błędy
+*/
 func (ds *Dataset) LoadData() {
 	url := "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv"
 	response, err := http.Get(url)
@@ -168,6 +189,11 @@ func (ds *Dataset) LoadData() {
 	}
 }
 
+/*
+Funkcja ToXY konwertuje zestaw danych na cechy i etykiety
+- ekstraktuje cechy
+- konwertuje jakość wina na liczbę załkowitą jako etykietę klasy
+*/
 func (ds Dataset) ToXY() ([][]float64, []int) {
 	X := make([][]float64, len(ds))
 	Y := make([]int, len(ds))
@@ -190,6 +216,11 @@ func (ds Dataset) ToXY() ([][]float64, []int) {
 	return X, Y
 }
 
+/*
+Funkcja TrainTestSplit dzieli na dane zestawy treningowe i testowe
+- generuje losową permutację indeksów próbek
+- dzieli dane na podstawie indeksów
+*/
 func (ds Dataset) TrainTestSplit(testSize float64) (Dataset, Dataset) {
 	rand.Seed(time.Now().UnixNano())
 	indices := rand.Perm(len(ds))
@@ -224,6 +255,11 @@ type PassengerData struct {
 	Fare     float64
 }
 
+/*
+Funkcja Print wyświetla zawartość danych pasażeró
+- wyświetla dane pasażerów
+- zatrzymuje wyświetlanie po osiągnięciu limitu
+*/
 func (ds DatasetPasanger) Print(optionalArgs ...int) {
 	var tr int = -1
 	if len(optionalArgs) == 1 {
@@ -237,6 +273,12 @@ func (ds DatasetPasanger) Print(optionalArgs ...int) {
 	}
 }
 
+/*
+Funkcja LoadData wczytuje dane pasażerów z pliku CSV
+- otwiera plik CSV i odczytuje jego zawartość
+- konwertuje dane na strukturę 'PassengerData'
+- obsługuje brakujące dane i błędy w formacie pliku
+*/
 func (ds *DatasetPasanger) LoadData() {
 	filename := "tested.csv"
 	csvFile, err := os.Open(filename)
@@ -285,6 +327,11 @@ func (ds *DatasetPasanger) LoadData() {
 	}
 }
 
+/*
+Funkcja Visualize wizualizuje rozkład liczy pasażerów, którzy przeżyli lub zmarli
+- oblicza liczbę pasażerów dla każdej grupy
+- tworzy histogram i zapisuje go
+*/
 func (ds DatasetPasanger) Visualize() {
 	// Zliczanie ocalałych i zmarłych pasażerów
 	survivedCount := 0
@@ -329,6 +376,12 @@ func (ds DatasetPasanger) Visualize() {
 
 	fmt.Println("Wykres zapisany do titanic_histogram.png")
 }
+
+/*
+Funkcja ToXY konwertuje dane pasażerów na cechy i etykiety
+- ekstraktuje cechy
+- ustawia zmienna 'Survived' jako etykietę klasy
+*/
 func (ds DatasetPasanger) ToXY() ([][]float64, []int) {
 	X := make([][]float64, len(ds))
 	Y := make([]int, len(ds))
@@ -346,6 +399,7 @@ func (ds DatasetPasanger) ToXY() ([][]float64, []int) {
 	return X, Y
 }
 
+// Funkcja TrainTestSplit dzieli dane pasażerów na zestawy treningowe i testowe
 func (ds DatasetPasanger) TrainTestSplit(testSize float64) (DatasetPasanger, DatasetPasanger) {
 	rand.Seed(time.Now().UnixNano())
 	indices := rand.Perm(len(ds))
@@ -377,6 +431,7 @@ type APIData struct {
 	MolWeight      int
 }
 
+// Funkcja Print wyświetla dane dotyczące sekwencji insulin
 func (ds DatasetInsulin) Print(optionalArgs ...int) {
 	var tr int = -1
 	if len(optionalArgs) == 1 {
@@ -390,6 +445,12 @@ func (ds DatasetInsulin) Print(optionalArgs ...int) {
 	}
 }
 
+/*
+Funkcja LoadData pobiera dane o insulinach z API UniProt
+- wysyła zapytanie HTTP do Api UniProt
+- dekoduje odpowiedź JSON i konwertuje dane na strukturę APIData
+- obsługuje dekompresje odpowiedzi oraz błędy w połączeniu
+*/
 func (ds *DatasetInsulin) LoadData() {
 	apiURL := "https://rest.uniprot.org/uniprotkb/stream?compressed=false&query=reviewed:true+AND+insulin&fields=organism_id,mass,length,lineage_ids&size=500"
 
@@ -475,6 +536,11 @@ func (ds *DatasetInsulin) LoadData() {
 	}
 }
 
+/*
+Funkcja Visualize wizualizuje rozkłąd długości sekwencji insulin
+- oblicza liczność próbek dla każdej długości sekwencji
+- tworzy histogram i zapisuje go
+*/
 func (ds DatasetInsulin) Visualize() {
 	sequenceLengths := make(map[int]int)
 	for _, data := range ds {
@@ -518,6 +584,11 @@ func (ds DatasetInsulin) Visualize() {
 	fmt.Println("Wykres zapisany do insulin_sequence_length_distribution.png")
 }
 
+/*
+Funkcja ToXY konweruje dane o insulinach na cechy i etykiety
+- ekstrahuje cechy
+- ustawia zmienną IsHuman jako etykietę klasy
+*/
 func (ds DatasetInsulin) ToXY() ([][]float64, []int) {
 	X := make([][]float64, len(ds))
 	Y := make([]int, len(ds))
@@ -532,6 +603,7 @@ func (ds DatasetInsulin) ToXY() ([][]float64, []int) {
 	return X, Y
 }
 
+// Funkcja TrainTestSplit dzieli dane o insulinach na zestawy treningowe i testowe
 func (ds DatasetInsulin) TrainTestSplit(testSize float64) (DatasetInsulin, DatasetInsulin) {
 	rand.Seed(time.Now().UnixNano())
 	indices := rand.Perm(len(ds))
