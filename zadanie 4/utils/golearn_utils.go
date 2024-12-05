@@ -6,7 +6,12 @@ import (
 	"strings"
 	"strconv"
 )
-
+/*
+Funkcja makeAtrr tworzy liste atrybutów GoLearn na podstawie ceh w danych
+- tworzy listę nazw cech
+- inicjalizuje dla każdej cechy obiekt typu base.FloatAttribute
+- ustawia domyślne wartości atrybutów
+*/
 func makeAtrr() *[]base.Attribute {
 	atrTable := []string{
 		"FixedAcidity",
@@ -32,7 +37,11 @@ func makeAtrr() *[]base.Attribute {
 	return &attrs
 }
 
-
+/*
+Funkcja makeData konwertuje dane strukturalne na macierz liczbową
+- dla każdej próbki danych tworzy tablicę wartości cech
+- zwraca dane jako macierz 2D, gdzie każda kolumna reprezentuje cechę
+*/
 func makeData(ds Dataset) [][]float64 {
 	newData := make([][]float64, 0, len(ds))
 	for _, data := range ds {
@@ -54,7 +63,13 @@ func makeData(ds Dataset) [][]float64 {
 	}
 	return newData
 }
-
+/*
+Funkcja MakeInstances tworzy obiekt DenseInstances w formacie GoLearn
+- tworzy listę atrybutów na podstawie cech w danych
+- dodaje atrybuty i ich specyfikację do obiektu DenseInstances
+- dostosowuje precyzję wartości atrybutów
+- dodaje etykiety klas jako atrybuty klasowe
+*/
 func MakeInastances(ds Dataset) *base.DenseInstances {
 	attrs := *makeAtrr()
 	instances := makeData(ds)
