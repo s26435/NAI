@@ -10,6 +10,7 @@ import (
 
 const file_name string = "tree.mermaid"
 
+// Struktura reprezentująca węzeł w drzewie decyzyjnym
 type Node struct {
 	Feature   int
 	Threshold float64
@@ -18,6 +19,7 @@ type Node struct {
 	Label     *int
 }
 
+// Struktura dla drzewa decyzyjnego
 type DecisionTree struct {
 	MaxDepth int
 	Tree     *Node
@@ -52,22 +54,28 @@ func getDataset(dataSetNum int)([][]float64, []int, [][]float64, []int, error){
 	}
 	return X, y, X_test, y_test, nil
 }
-
+/*
+Funkcja ShowTree wywołuje klasyfikację drzewem decyzyjnym
+- pobiera dane z getDataset
+- trenuje drzewo o maksymalnej głębokości 'MaxDepth'
+- ocenia model na danych testowych, wylicza metryki i generuje diagram
+*/
 func ShowTree(dataSetNum int){
 	X, y, X_test, y_test, err := getDataset(dataSetNum)
 	utils.Must(err)
 
 	tree := &DecisionTree{MaxDepth: 5}
 	tree.Fit(X, y)
-	// evaluation_acc := tree.Evaluate(X_test, y_test)
-	// fmt.Printf("Evaluation acc: %f\n", evaluation_acc)
-	// fmt.Println("Drzewo zbudowane.")
 	tree.Analyze(X_test, y_test)
 	fmt.Println("Zapisaywanie drzewa do pliku i wyświetlanie")
 	utils.Must(tree.ToFlowchart(file_name))
 	utils.ShowDiagram(file_name)
 }
-
+/*
+Funkcja ToFLowchart generuje diagram
+- tworzy plik i zapisuje w nim strukturę drzewa
+- obsługuje rekurencyjne zapisywanie węzłów drzewa
+*/
 func (dt *DecisionTree) ToFlowchart(filename string) error {
 	if dt.Tree == nil {
 		return fmt.Errorf("tree is empty fit the tree first")
@@ -92,7 +100,11 @@ func (dt *DecisionTree) ToFlowchart(filename string) error {
 	fmt.Printf("Flowchart saved to %s\n", filename)
 	return nil
 }
-
+/*
+Funkcja writeNode zapisuje węzeł drzewa
+- sprawdza, czy węzeł jest liściem. Jeśli tak, zapisuje jego etykietę
+- jeśli nie, zapisuje cehcę i próg podziału oraz rekurencyjnie przetwarza poddrzewa
+*/
 func writeNode(file *os.File, node *Node, nodeID string) error {
 	if node.Label != nil {
 		_, err := file.WriteString(fmt.Sprintf("%s[\"Class: %d\"]\n", nodeID, *node.Label))
@@ -126,7 +138,12 @@ func writeNode(file *os.File, node *Node, nodeID string) error {
 	}
 	return nil
 }
-
+/*
+Funkcja Evaluate oblicza dokładność drzewa decyzyjnego na danych testowych
+- wywołuje 'Predict'
+- porównujeprzewidywane etykiety z rzeczywistymi
+- liczy poprawne przewidywania i oblicza dokłądność
+*/
 func (dt *DecisionTree) Evaluate(testX [][]float64, testY []int) float64 {
 	predictions := dt.Predict(testX)
 	correct := 0
@@ -138,7 +155,13 @@ func (dt *DecisionTree) Evaluate(testX [][]float64, testY []int) float64 {
 	return float64(correct) / float64(len(testY))
 }
 
-// Funkcja do obliczania entropii
+/*
+Funkcja entropy oblicza entropię zbioru danych
+- oblicza liczność każdej klasy w zbiorze
+- dla każdej klasy oblicza prawdopodobieństwo
+- stosuje wzór na entropię
+- zwraca sumę jako wartość entropii
+*/
 func entropy(y []int) float64 {
 	classCounts := make(map[int]int)
 	for _, label := range y {
@@ -153,7 +176,12 @@ func entropy(y []int) float64 {
 	return entropyValue
 }
 
-// Funkcja do obliczania zysku informacji
+/*
+Funkcja informationGain oblicza zysk informacji dla podziału danych
+- oblicza entropię dla pełnego zbioru ('y')
+- oblicza ważone entropie dla lewego i prawego podzbioru
+- zwraca różnicę między entropią zbioru a ważoną sumą entropii podzbiorów
+*/
 func informationGain(y, yLeft, yRight []int) float64 {
 	parentEntropy := entropy(y)
 	leftWeight := float64(len(yLeft)) / float64(len(y))
@@ -162,7 +190,12 @@ func informationGain(y, yLeft, yRight []int) float64 {
 	return parentEntropy - weightedEntropy
 }
 
-// Funkcja do dzielenia danych
+/*
+Funkcja splitData dzieli dane na dwa podzbiory na podstawie cechy i progu
+- iteruje przez próbki danych
+- próbki, które spełnieją warunek, trafiają do lewego podzbioru
+- pozostałe próbki trafiają do prawego podzbioru
+*/
 func splitData(X [][]float64, y []int, featureIndex int, threshold float64) ([][]float64, [][]float64, []int, []int) {
 	var XLeft, XRight [][]float64
 	var yLeft, yRight []int
@@ -179,7 +212,14 @@ func splitData(X [][]float64, y []int, featureIndex int, threshold float64) ([][
 	return XLeft, XRight, yLeft, yRight
 }
 
-// Funkcja do budowy drzewa
+/*
+Funkcja buildTree buduje drzewo decyzyjne
+- sprawdza warunki zatrzymania
+ * wszystkie próbki należą do tej samej klasy
+ * maksymalna głębokość drzewa została osiągnięta
+- dla każdej cechy oblicza zysk informacji i wybiera najlepszy podział
+- rekurencyjnie buduje lewe i prawe poddrzewo
+*/
 func (dt *DecisionTree) buildTree(X [][]float64, y []int, depth int) *Node {
 	if len(unique(y)) == 1 || len(X) == 0 || (dt.MaxDepth > 0 && depth >= dt.MaxDepth) {
 		label := mostCommon(y)
@@ -219,12 +259,21 @@ func (dt *DecisionTree) buildTree(X [][]float64, y []int, depth int) *Node {
 	}
 }
 
-// Funkcja fit
+/*
+Funkcja fit trenuje drzewo na danych treningowych
+- wywołuje funkcję 'buildTree
+- przechowuje wytrenowane drzewo w polu 'tree'
+*/
 func (dt *DecisionTree) Fit(X [][]float64, y []int) {
 	dt.Tree = dt.buildTree(X, y, 0)
 }
 
-// Funkcja predict dla pojedynczej próbki
+/*
+Funkcja predictSample przewiduje etykietę klasy dla jednej próbki
+- sprawdza, czy bieżący węzeł jest liściem. Jeśli tak to zwraca etykietę
+- jeśli wartość cechy próbki jest mniejsza lub równa progowi w węźle, rekurencyjnie przechodzi do lewego poddrzewa
+- w przeciwnym razie przechodzi do prawego poddrzewa
+*/
 func (dt *DecisionTree) predictSample(x []float64, node *Node) int {
 	if node.Label != nil {
 		return *node.Label
@@ -235,7 +284,12 @@ func (dt *DecisionTree) predictSample(x []float64, node *Node) int {
 	return dt.predictSample(x, node.Right)
 }
 
-// Funkcja predict dla zbioru danych
+/*
+Funkcja Predict przewiduje etykiety klas dla zbioru danych
+- iteruje przez każdą próbkę w danych
+- wywołuje predictSample dla każdej próbki
+- zwraca listę przewidywanych etykiet klas
+*/
 func (dt *DecisionTree) Predict(X [][]float64) []int {
 	predictions := make([]int, len(X))
 	for i, x := range X {
@@ -249,7 +303,11 @@ func (dt *DecisionTree) Predict(X [][]float64) []int {
 //
 
 
-//Zwraca liste unikalnych wartości jako int
+/*
+Funkcja unique znajduje unikalne wartości w tablicy liczb całkowitych
+- wykorzystuje mapę do identyfikacji unikalnych wartości
+- iteruje przez tablicę i dodaje niepowtarzające się elementy do listy
+*/
 func unique(arr []int) []int {
 	keys := make(map[int]bool)
 	var list []int
@@ -262,7 +320,11 @@ func unique(arr []int) []int {
 	return list
 }
 
-//Zwraca liste unikalnych wartości jako float64
+/*
+Funkcja uniqueFloats znajduje unikalne wartości w tablicy liczb zmiennoprzecinowych
+- wykorzystuje mapę do identyfikacji unikalnych wartości
+- zwraca listę unikalnych wartości jako wynik
+*/
 func uniqueFloats(arr []float64) []float64 {
 	keys := make(map[float64]bool)
 	var list []float64
@@ -275,7 +337,11 @@ func uniqueFloats(arr []float64) []float64 {
 	return list
 }
 
-//Zwraca kolumnę danych z tablicy wszystkich danych
+/*
+Funkcja column zwraca jedną kolumnę z macierzy danych
+- iteruje przez wiersze macierzy
+- zbiera wartości w danej kolumnie do tablicy wynikowej
+*/
 func column(matrix [][]float64, index int) []float64 {
 	col := make([]float64, len(matrix))
 	for i := range matrix {
@@ -284,7 +350,11 @@ func column(matrix [][]float64, index int) []float64 {
 	return col
 }
 
-//zwraca najbardziej popularną wartość z tablicy
+/*
+Funkcja mostCommon znajduje najczęściej występującą wartość w tablicy 
+- liczy wystąpienia każdej wartości w tablicy
+- zwraca wartość o największej liczbie wystąpień
+*/
 func mostCommon(arr []int) int {
 	counts := make(map[int]int)
 	for _, value := range arr {
@@ -299,7 +369,12 @@ func mostCommon(arr []int) int {
 	}
 	return mostCommonValue
 }
-
+/*
+Funkcja Analyze oblicza i wyświetla metryki ewaluacyjne dl adrzewa decyzyjnego
+- wywołuje predict aby uzyskać przewidywane etykiety klas
+- oblicza metryki
+- wyświetla wyniki w konsoli
+*/
 func (dt *DecisionTree) Analyze(X_test [][]float64, y_test []int) {
     predictions := dt.Predict(X_test)
     TP, FP, TN, FN := 0, 0, 0, 0
