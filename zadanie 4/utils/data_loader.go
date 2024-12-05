@@ -10,6 +10,13 @@ import (
 
 const dataset1 string = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv"
 
+/*
+Funkcja LoadData pobiera dane z zewnętrznego źródła i zapisuje je w pliku CSV
+- pobiera dane z dataset1 przy użyciu http.Get
+- zmienia separatory ';' na ',' w danych
+- zapisuje zmodyfikowane dane w pliku data.csv
+- obsługuje potencjalne błędy
+*/
 func LoadData() error {
 	response, err := http.Get(dataset1)
 	if err != nil {
@@ -45,12 +52,18 @@ func LoadData() error {
 
 	return nil
 }
-
+/*
+Funkcja Normalize normalizuje dane wejściowe
+- oblicza minimalną i maksymalną wartość dla każdej cechy
+- skaluje wartości cech do przedziału [0, 1]
+jeśli cehca ma stałą wartość, ustawia ją na 0
+*/
 func Normalize(X [][]float64) [][]float64 {
     normalizedX := make([][]float64, len(X))
     minValues := make([]float64, len(X[0]))
     maxValues := make([]float64, len(X[0]))
-
+	
+// znajdowanie minimalnych i maksymalnych wartości
     for j := 0; j < len(X[0]); j++ {
         minValues[j] = X[0][j]
         maxValues[j] = X[0][j]
@@ -63,7 +76,7 @@ func Normalize(X [][]float64) [][]float64 {
             }
         }
     }
-
+// Normalizacja danych
     for i := 0; i < len(X); i++ {
         normalizedX[i] = make([]float64, len(X[i]))
         for j := 0; j < len(X[i]); j++ {
