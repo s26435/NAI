@@ -8,15 +8,19 @@ import (
 	"runtime"
 )
 
-// ShowDiagram generuje plik HTML z diagramem Mermaid i otwiera go w przeglądarce
+/*Funkcja ShowDiagram generuje plik HTML z diagramem Mermaid i otwiera go w przeglądarce
+- wczytuje zawartość pliku .mermaid
+- generuje plik html z osadzonym idagramem
+- otwiera plik html w domyślnej przeglądarce
+*/
 func ShowDiagram(filePath string) {
-	// Wczytaj plik .mermaid
+	// Wczytanie plik .mermaid
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		log.Fatalf("Błąd podczas odczytu pliku: %v", err)
 	}
 
-	// Generuj zawartość HTML
+	// Generowanie zawartość HTML
 	htmlContent := fmt.Sprintf(`
 	<!DOCTYPE html>
 	<html lang="en">
@@ -37,19 +41,22 @@ func ShowDiagram(filePath string) {
 	</html>
 	`, string(data))
 
-	// Zapisz HTML do pliku
+	// Zapisanie HTML do pliku
 	outputFile := "diagram.html"
 	err = ioutil.WriteFile(outputFile, []byte(htmlContent), 0644)
 	if err != nil {
 		log.Fatalf("Błąd podczas zapisu pliku HTML: %v", err)
 	}
 
-	// Otwórz plik w przeglądarce
+	// Otwarcie plik w przeglądarce
 	openBrowser(outputFile)
 	fmt.Println("Diagram został wyświetlony w przeglądarce.")
 }
 
-// openBrowser otwiera podany plik/URL w przeglądarce
+/* Funkcja openBrowser otwiera podany plik/URL w przeglądarce
+- sprawdza system operacyjny
+- używa odpowiedniego polecenia do otwarcia pliku w przeglądarce
+*/
 func openBrowser(fileName string) {
 	var err error
 	switch runtime.GOOS {
@@ -68,6 +75,7 @@ func openBrowser(fileName string) {
 	}
 }
 
+// Funkcja Must wywołuje panic w przypadku błędu
 func Must(err error){
 	if err != nil {
 		panic(err)
