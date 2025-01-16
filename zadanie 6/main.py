@@ -39,7 +39,6 @@ def calculate_gaze_direction(landmarks, image_width, image_height):
     # Średni wektor spojrzenia
     gaze_vector = (left_gaze_vector + right_gaze_vector) / 2
 
-    # Przeskalowanie i przesunięcie na środek ekranu
     # Odwrócenie osi Y dla poprawnej orientacji
     gaze_vector[1] = -gaze_vector[1]
     
